@@ -20,6 +20,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 
+import java.time.DayOfWeek;
+import torneos.*;
 
 public class GestorPersistencia {
 
@@ -28,7 +30,60 @@ public class GestorPersistencia {
     public GestorPersistencia(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
     }
+    
+    private Turno buscarTurnoPorId(Cafe cafe, String idTurno) {
+        if (idTurno == null || idTurno.equals("null")) {
+            return null;
+        }
 
+        for (Usuario u : cafe.getUsuarios().values()) {
+            if (u instanceof Empleado) {
+                Empleado emp = (Empleado) u;
+                for (Turno t : emp.getTurnos()) {
+                    if (t.getIdTurno().equals(idTurno)) {
+                        return t;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    private String mapaAString(Map<String, Integer> mapa) {
+        String resultado = "";
+        for (String login : mapa.keySet()) {
+            if (!resultado.isEmpty()) {
+                resultado += ",";
+            }
+            resultado += login + ":" + mapa.get(login);
+        }
+        return resultado;
+    }
+
+    private String listaAString(List<String> lista) {
+        return String.join(",", lista);
+    }
+
+    private void cargarMapaInscritos(String texto, Torneo torneo, boolean fanaticos) {
+        if (texto == null || texto.isEmpty()) {
+            return;
+        }
+
+        String[] entradas = texto.split(",");
+        for (String entrada : entradas) {
+            String[] partes = entrada.split(":");
+            String login = partes[0];
+            int cupos = Integer.parseInt(partes[1]);
+
+            if (fanaticos) {
+                torneo.agregarInscritoFanatico(login, cupos);
+            } else {
+                torneo.agregarInscritoRegular(login, cupos);
+            }
+        }
+    }
+    
     // GUARDAR
 
     public void guardarTodo(Cafe cafe) throws Exception {
@@ -109,7 +164,35 @@ public class GestorPersistencia {
         for (SolicitudCambioTurno s : cafe.getSolicitudesCambioTurno()) {
             pw.println(s.toString());
         }
+        
+        pw.println("[torneos]");
+        for (Torneo t : cafe.getTorneos()) {
+            String tipo = "";
+            double valor = 0;
 
+            if (t instanceof TorneoAmistoso) {
+                tipo = "AMISTOSO";
+                valor = ((TorneoAmistoso) t).getPremioDescuento();
+            } else if (t instanceof TorneoCompetitivo) {
+                tipo = "COMPETITIVO";
+                valor = ((TorneoCompetitivo) t).getTarifa();
+            }
+
+            pw.println(
+                "id\t" + t.getId()
+                + "|tipo\t" + tipo
+                + "|capacidad\t" + t.getCapacidad()
+                + "|idJuego\t" + t.getJuego().getIdJuegoPrestamo()
+                + "|dia\t" + t.getDia()
+                + "|valor\t" + valor
+                + "|cuposFanaticos\t" + t.getCuposFanaticos()
+                + "|cuposRegulares\t" + t.getCuposRegulares()
+                + "|inscritosFanaticos\t" + mapaAString(t.getInscritosFanaticos())
+                + "|inscritosRegulares\t" + mapaAString(t.getInscritosRegulares())
+                + "|empleadosInscritos\t" + listaAString(t.getEmpleadosInscritos())
+            );
+        }
+        
         pw.close();
     }
 
@@ -328,13 +411,52 @@ public class GestorPersistencia {
                     Empleado sol = (Empleado) cafe.getUsuarios().get(loginSol);
                     Empleado dest = loginDest.equals("null") ? null
                             : (Empleado) cafe.getUsuarios().get(loginDest);
-                    Turno turnoSol = sol.getTurno(idTurnoSol);
-                    Turno turnoDest = (dest == null || idTurnoDest.equals("null")) ? null
-                            : dest.getTurno(idTurnoDest);
+                    Turno turnoSol = buscarTurnoPorId(cafe, idTurnoSol);
+
+                    Turno turnoDest = null;
+                    if (dest != null && !idTurnoDest.equals("null")) {
+                        turnoDest = buscarTurnoPorId(cafe, idTurnoDest);
+                    }
                     SolicitudCambioTurno sc = new SolicitudCambioTurno(id, tipo, fecha, sol, dest,
                             turnoSol, turnoDest);
                     if (aprobada) sc.aprobar();
                     cafe.getSolicitudesCambioTurno().add(sc);
+                }else if (seccionActual.equals("[torneos]")) {
+                    String id = p[0].split("\t")[1];
+                    String tipo = p[1].split("\t")[1];
+                    int capacidad = Integer.parseInt(p[2].split("\t")[1]);
+                    String idJuego = p[3].split("\t")[1];
+                    DayOfWeek dia = DayOfWeek.valueOf(p[4].split("\t")[1]);
+                    double valor = Double.parseDouble(p[5].split("\t")[1]);
+                    int cuposFanaticos = Integer.parseInt(p[6].split("\t")[1]);
+                    int cuposRegulares = Integer.parseInt(p[7].split("\t")[1]);
+
+                    JuegoMesaPrestamo juego = cafe.getJuegosPrestamo().get(idJuego);
+
+                    Torneo torneo;
+                    if (tipo.equals("AMISTOSO")) {
+                        torneo = new TorneoAmistoso(id, capacidad, juego, dia, valor);
+                    } else {
+                        torneo = new TorneoCompetitivo(id, capacidad, juego, dia, valor);
+                    }
+
+                    torneo.setCuposFanaticos(cuposFanaticos);
+                    torneo.setCuposRegulares(cuposRegulares);
+
+                    String inscritosFanaticos = p[8].split("\t").length > 1 ? p[8].split("\t")[1] : "";
+                    cargarMapaInscritos(inscritosFanaticos, torneo, true);
+
+                    String inscritosRegulares = p[9].split("\t").length > 1 ? p[9].split("\t")[1] : "";
+                    cargarMapaInscritos(inscritosRegulares, torneo, false);
+
+                    String empleados = p[10].split("\t").length > 1 ? p[10].split("\t")[1] : "";
+                    if (!empleados.isEmpty()) {
+                        for (String login : empleados.split(",")) {
+                            torneo.agregarEmpleadoInscrito(login);
+                        }
+                    }
+
+                    cafe.agregarTorneo(torneo);
                 }
                 
                 

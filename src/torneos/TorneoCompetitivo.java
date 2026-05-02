@@ -35,7 +35,9 @@ public class TorneoCompetitivo extends Torneo {
 		return total;
 	}
 	
-
+	public double getTarifa() {
+	    return tarifa;
+	}
 	
 	
 

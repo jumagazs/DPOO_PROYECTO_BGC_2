@@ -706,6 +706,7 @@ public class Cafe {
 	    this.consecutivoSolicitudes = this.solicitudesCambioTurno.size() + 1;
 	    this.consecutivoProductos = this.menu.size() + 1;
 	    this.consecutivoSugerencias = this.sugerencias.size() + 1;
+	    this.consecutivoTorneos = this.torneos.size() + 1;
 	    this.consecutivoTurnos = 1;
 	    for (Usuario u : this.usuarios.values()) {
 	        if (u instanceof Empleado) {
@@ -843,6 +844,14 @@ public class Cafe {
 	        if (t.getId().equals(idTorneo)) return t;
 	    }
 	    throw new Exception("El torneo no existe.");
+	}
+	
+	public List<Torneo> getTorneos() {
+	    return torneos;
+	}
+
+	public void agregarTorneo(Torneo torneo) {
+	    torneos.add(torneo);
 	}
 	
 	//PARA PAGAR CON CODIGO DE TORNEO

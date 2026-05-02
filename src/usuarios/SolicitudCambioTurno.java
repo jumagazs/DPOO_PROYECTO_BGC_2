@@ -72,9 +72,9 @@ public class SolicitudCambioTurno {
              + "|fecha\t" + this.fechaSolicitud.toString()
              + "|aprobada\t" + this.aprobada
              + "|solicitante\t" + this.solicitante.getLogin()
-             + "|turnoSolicitante\t" + this.turnoSolicitante.getIdTurno()
-             + "|empleadoDestino\t" + loginDestino
-             + "|turnoDestino\t" + idTurnoDestino;
+             + "|turnoSolicitante\t" + (turnoSolicitante != null ? turnoSolicitante.getIdTurno() : "null")
+             + "|empleadoDestino\t" + (empleadoDestino != null ? empleadoDestino.getLogin() : "null")
+             + "|turnoDestino\t" + (turnoDestino != null ? turnoDestino.getIdTurno() : "null");
     }
     
 }

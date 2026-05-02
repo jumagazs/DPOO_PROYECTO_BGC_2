@@ -11,6 +11,8 @@ import usuarios.*;
 import ventas.*;
 import modelo.*;
 import sugerencias.*;
+import java.time.DayOfWeek;
+import torneos.*;
 
 public class PruebasAutomaticas {
 
@@ -510,8 +512,68 @@ public class PruebasAutomaticas {
 	   } catch (Exception e) {
 	       System.out.println("RF Admin 4 eliminar ERROR: " + e.getMessage());
 	   }
-	      
-	         
+	   
+	   //PRUEBAS TORNEO
+	   
+	   // ---- Torneos crear e inscribir
+	   try {
+	       String idJuegoTorneo = null;
+
+	       for (Map.Entry<String, JuegoMesaPrestamo> entry : cafe.getJuegosPrestamo().entrySet()) {
+	           if (entry.getValue().getNombre().equals("UNO")) {
+	               idJuegoTorneo = entry.getKey();
+	               break;
+	           }
+	       }
+
+	       JuegoMesaPrestamo juego = cafe.getJuegosPrestamo().get(idJuegoTorneo);
+
+	       Torneo torneo = new TorneoAmistoso("TOR_TEST", 5, juego, DayOfWeek.FRIDAY, 0.1);
+	       cafe.agregarTorneo(torneo);
+
+	       System.out.println("RF Torneo OK - Torneo creado");
+
+	       Usuario cliente = cafe.getUsuarios().get("cliente1");
+	       torneo.inscribirUsuario(cliente, 2);
+
+	       System.out.println("RF Torneo OK - Usuario inscrito");
+
+	   } catch (Exception e) {
+	       System.out.println("RF Torneo ERROR: " + e.getMessage());
+	   }
+	   
+	// ---- Torneos bloqueo por cupos
+	   try {
+	       Usuario cliente = cafe.getUsuarios().get("cliente1");
+
+	       Torneo torneo = cafe.getTorneos().get(cafe.getTorneos().size() - 1);
+
+	       torneo.inscribirUsuario(cliente, 100);
+
+	       System.out.println("RF Torneo ERROR - Debió bloquear por cupos");
+
+	   } catch (Exception e) {
+	       System.out.println("RF Torneo OK - Bloqueo por cupos: " + e.getMessage());
+	   }
+	   
+	// ---- Torneos carga desde persistencia
+	   try {
+	       System.out.println("TORNEOS CARGADOS ");
+
+	       for (Torneo t : cafe.getTorneos()) {
+	           System.out.println("ID: " + t.getId());
+	           System.out.println("Juego: " + t.getJuego().getNombre());
+	           System.out.println("Dia: " + t.getDia());
+	           System.out.println("Fanaticos: " + t.getInscritosFanaticos());
+	           System.out.println("Regulares: " + t.getInscritosRegulares());
+	       }
+
+	       System.out.println("RF Torneos OK - Carga correcta");
+
+	   } catch (Exception e) {
+	       System.out.println("RF Torneos ERROR: " + e.getMessage());
+	   }
+	   
         // ---- RF Admin 7  Informe 
         try {
             System.out.println("\nRF Admin 7 - Informe diario:");

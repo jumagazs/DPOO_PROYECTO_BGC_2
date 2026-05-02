@@ -21,7 +21,9 @@ public class TorneoAmistoso extends Torneo {
 	    ganador.otorgarDescuentoTorneo(this.premioDescuento);
 	}
 	
-
+	public double getPremioDescuento() {
+	    return premioDescuento;
+	}
 
 
 

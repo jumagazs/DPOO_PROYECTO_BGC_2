@@ -136,5 +136,29 @@ public abstract class Torneo {
 		return id;
 	}
 	
+	public List<String> getEmpleadosInscritos() {
+	    return empleadosInscritos;
+	}
+
+	public void agregarInscritoRegular(String login, int cupos) {
+	    inscritosRegulares.put(login, cupos);
+	}
+
+	public void agregarInscritoFanatico(String login, int cupos) {
+	    inscritosFanaticos.put(login, cupos);
+	}
+
+	public void agregarEmpleadoInscrito(String login) {
+	    empleadosInscritos.add(login);
+	}
+
+	public void setCuposFanaticos(int cuposFanaticos) {
+	    this.cuposFanaticos = cuposFanaticos;
+	}
+
+	public void setCuposRegulares(int cuposRegulares) {
+	    this.cuposRegulares = cuposRegulares;
+	}
+	
 
 }
