@@ -4,11 +4,12 @@ import java.util.Collection;
 
 public class Cliente extends Usuario {
 		private int puntosFidelidad;
-		private String codigoDescuento;
+		private double porcentajeDescuentoTorneo;
 		
 	public Cliente(String login, String contrasena) {
 			super(login, contrasena);
 			this.puntosFidelidad = 0;
+			this.porcentajeDescuentoTorneo = 0;
 
 		}
 	
@@ -27,19 +28,7 @@ public class Cliente extends Usuario {
         this.puntosFidelidad -= puntos;
     }
     
-    public void aplicarCodigoDescuento(String codigo) throws Exception {
-        if (codigo == null || codigo.isEmpty())
-            throw new Exception("Código inválido.");
-        this.codigoDescuento = codigo;
-    }
 
-	public String getCodigoDescuento() {
-		return codigoDescuento;
-	}
-
-	public void borrarCodigoDescuento() {
-		this.codigoDescuento = null;
-	}
 	
 	@Override
 	public String toString() {
@@ -67,7 +56,28 @@ public class Cliente extends Usuario {
 	    }
 	    return 0;
 	}
+	    
+    public void otorgarDescuentoTorneo(double porcentaje) throws Exception {
+        if (this.porcentajeDescuentoTorneo > 0) {
+            throw new Exception("El cliente ya tiene un descuento de torneo activo (no acumulable).");
+        }
+        this.porcentajeDescuentoTorneo = porcentaje;
+    }
 	
+    public double consumirDescuentoTorneo() throws Exception {
+        if (this.porcentajeDescuentoTorneo == 0) {
+            throw new Exception("El cliente no tiene descuento de torneo activo.");
+        }
+        double pct = this.porcentajeDescuentoTorneo;
+        this.porcentajeDescuentoTorneo = 0;  
+        return pct;
+    }
+
+	public double getPorcentajeDescuentoTorneo() {
+		return porcentajeDescuentoTorneo;
+	}
+    
+    
 
     
 }

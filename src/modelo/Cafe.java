@@ -833,6 +833,29 @@ public class Cafe {
 	    }
 	    throw new Exception("El pedido no existe.");
 	}
+	
+	//PARA PAGAR CON CODIGO DE TORNEO
+	
+	public VentaJuego comprarJuegoConDescuentoTorneo(String login, String idJuego, int cantidad) 
+	        throws Exception {
+
+	    Cliente cliente = validarCliente(login);   
+	    JuegoMesaVenta juego = validarJuegoVenta(idJuego);
+
+	    juego.reducirStock(cantidad);
+
+	    String idVenta = "V" + consecutivoVentas++;
+	    VentaJuego venta = new VentaJuego(idVenta, LocalDateTime.now().toString(), cliente);
+	    venta.agregarDetalle(new DetalleVenta(cantidad, juego));
+
+	    double descuento = cliente.consumirDescuentoTorneo();   
+
+	    venta.calcularValores(0.19, descuento, 0);   
+	    cliente.agregarPuntos(venta.getPuntosGenerados());
+	    ventas.add(venta);
+
+	    return venta;
+	}
     
 }
 

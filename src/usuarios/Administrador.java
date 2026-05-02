@@ -1,5 +1,6 @@
 package usuarios;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -203,8 +204,8 @@ public class Administrador extends Usuario {
 	    juego.aumentarStock(cantidad);
 	}
 	
-	public Torneo crearTorneo(int cuposFanaticos, int cuposRegulares, JuegoMesaPrestamo juego, LocalDateTime horaInicio) {
-		Torneo torneo = new Torneo(cuposFanaticos,  cuposRegulares,  juego, horaInicio)
+	public Torneo crearTorneoAmistoso(String id, int cupos, JuegoMesaPrestamo juego, DayOfWeek dia,float descuento) {
+		return new TorneoAmistoso(id,  cupos,  juego, dia,descuento);
 	}
 	
 	@Override
