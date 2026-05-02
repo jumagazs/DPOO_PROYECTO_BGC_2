@@ -32,7 +32,7 @@ public class Cliente extends Usuario {
 	
 	@Override
 	public String toString() {
-	    return "login\t" + this.login + "|contrasena\t" + this.contrasena + "|puntos\t" + this.puntosFidelidad;
+	    return "login\t" + this.login + "|contrasena\t" + this.contrasena + "|puntos\t" + this.puntosFidelidad + "|descuentoTorneo\t" + this.porcentajeDescuentoTorneo;
 	}
 	
 	public double calcularDescuento(String codigoDescuento, int puntosAUsar, Collection<Usuario> usuarios) throws Exception {

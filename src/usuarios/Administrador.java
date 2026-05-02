@@ -204,7 +204,7 @@ public class Administrador extends Usuario {
 	    juego.aumentarStock(cantidad);
 	}
 	
-	public Torneo crearTorneoAmistoso(String id, int cupos, JuegoMesaPrestamo juego, DayOfWeek dia,float descuento) {
+	public Torneo crearTorneoAmistoso(String id, int cupos, JuegoMesaPrestamo juego, DayOfWeek dia, double descuento) {
 		return new TorneoAmistoso(id,  cupos,  juego, dia,descuento);
 	}
 	

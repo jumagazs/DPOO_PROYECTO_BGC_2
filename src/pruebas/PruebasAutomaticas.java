@@ -574,6 +574,248 @@ public class PruebasAutomaticas {
 	       System.out.println("RF Torneos ERROR: " + e.getMessage());
 	   }
 	   
+	// ============================================
+	   //               PRUEBAS DE TORNEOS
+	   // ============================================
+
+	   // ---- T01 - Crear torneo amistoso ----
+	   String idJuegoTorneoAmistoso = null;
+	   try {
+	       for (Map.Entry<String, JuegoMesaPrestamo> entry : cafe.getJuegosPrestamo().entrySet()) {
+	           if (entry.getValue().getNombre().equals("Catan")) {
+	               idJuegoTorneoAmistoso = entry.getKey(); break;
+	           }
+	       }
+	       TorneoAmistoso ta = cafe.crearTorneoAmistoso("admin", idJuegoTorneoAmistoso, 4, DayOfWeek.SATURDAY, 0.15);
+	       System.out.println("T01 OK - Torneo amistoso creado: " + ta.getId() 
+	           + " | cuposFan: " + ta.getCuposFanaticos() + " | cuposReg: " + ta.getCuposRegulares());
+	   } catch (Exception e) {
+	       System.out.println("T01 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T02 - Crear torneo competitivo ----
+	   String idJuegoTorneoCompet = null;
+	   try {
+	       cafe.agregarJuegoPrestamo("admin", "Carcassonne", 2000, "Z-Man", "Tablero",
+	           2, 5, false, true, true, true, 0, "Nuevo");
+	       cafe.agregarJuegoPrestamo("admin", "Carcassonne", 2000, "Z-Man", "Tablero",
+	           2, 5, false, true, true, true, 0, "Nuevo");
+	       for (Map.Entry<String, JuegoMesaPrestamo> entry : cafe.getJuegosPrestamo().entrySet()) {
+	           if (entry.getValue().getNombre().equals("Carcassonne")) {
+	               idJuegoTorneoCompet = entry.getKey(); break;
+	           }
+	       }
+	       TorneoCompetitivo tc = cafe.crearTorneoCompetitivo("admin", idJuegoTorneoCompet, 8, DayOfWeek.SUNDAY, 20000);
+	       System.out.println("T02 OK - Torneo competitivo creado: " + tc.getId()
+	           + " | tarifa: " + tc.getTarifa() + " | cuposMax: 2 copias x 5 jug = 10");
+	   } catch (Exception e) {
+	       System.out.println("T02 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T03 - Crear torneo con cupos insuficientes ----
+	   try {
+	       cafe.crearTorneoAmistoso("admin", idJuegoTorneoAmistoso, 100, DayOfWeek.SATURDAY, 0.10);
+	       System.out.println("T03 ERROR - Debió bloquear por copias insuficientes");
+	   } catch (Exception e) {
+	       System.out.println("T03 OK - Bloqueo por cupos: " + e.getMessage());
+	   }
+
+	   // ---- T04 - Crear competitivo con tarifa cero ----
+	   try {
+	       cafe.crearTorneoCompetitivo("admin", idJuegoTorneoCompet, 4, DayOfWeek.SUNDAY, 0);
+	       System.out.println("T04 ERROR - Debió bloquear tarifa <= 0");
+	   } catch (Exception e) {
+	       System.out.println("T04 OK - Bloqueo tarifa cero: " + e.getMessage());
+	   }
+
+	   // ---- T05 - Inscribir cliente regular (sin ser fanático) ----
+	   try {
+	       cafe.registrarCliente("torneoCli1", "1234");
+	       cafe.registrarCliente("torneoCli2", "1234");
+	       cafe.registrarCliente("torneoCli3", "1234");
+	       cafe.inscribirUsuarioTorneo("torneoCli1", "TA1", 2);
+	       Torneo t = cafe.getTorneos().get(0);
+	       System.out.println("T05 OK - Cliente regular inscrito | cuposReg restantes: " 
+	           + t.getCuposRegulares() + " | cuposFan: " + t.getCuposFanaticos());
+	   } catch (Exception e) {
+	       System.out.println("T05 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T06 - Inscribir fanático toma cupo fanático ----
+	   try {
+	       cafe.agregarJuegoFavoritoAUsuario("torneoCli2", idJuegoTorneoAmistoso);
+	       cafe.inscribirUsuarioTorneo("torneoCli2", "TA1", 1);
+	       Torneo t = cafe.getTorneos().get(0);
+	       System.out.println("T06 OK - Fanático inscrito en cupo fanático | cuposFan: " 
+	           + t.getCuposFanaticos() + " | inscritosFan: " + t.getInscritosFanaticos());
+	   } catch (Exception e) {
+	       System.out.println("T06 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T07 - Inscribir más de 3 cupos por usuario ----
+	   try {
+	       cafe.inscribirUsuarioTorneo("torneoCli3", "TA1", 5);
+	       System.out.println("T07 ERROR - Debió bloquear por límite de 3 cupos");
+	   } catch (Exception e) {
+	       System.out.println("T07 OK - Bloqueo por límite 3 cupos: " + e.getMessage());
+	   }
+
+	   // ---- T08 - Inscribir mismo usuario dos veces ----
+	   try {
+	       cafe.inscribirUsuarioTorneo("torneoCli1", "TA1", 1);
+	       System.out.println("T08 ERROR - Debió bloquear doble inscripción");
+	   } catch (Exception e) {
+	       System.out.println("T08 OK - Bloqueo doble inscripción: " + e.getMessage());
+	   }
+
+	   // ---- T09 - Desinscribir libera cupos ----
+	   try {
+	       Torneo t = cafe.getTorneos().get(0);
+	       int regAntes = t.getCuposRegulares();
+	       cafe.desinscribirUsuarioTorneo("torneoCli1", "TA1");
+	       System.out.println("T09 OK - Cliente desinscrito | cuposReg antes: " 
+	           + regAntes + " | después: " + t.getCuposRegulares());
+	   } catch (Exception e) {
+	       System.out.println("T09 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T10 - Empleado sin turno ese día puede inscribirse ----
+	   try {
+	       cafe.inscribirUsuarioTorneo("mesero1", "TA1", 1);
+	       Torneo t = cafe.getTorneos().get(0);
+	       System.out.println("T10 OK - Empleado inscrito (sin turno sábado) | empleadosInscritos: " 
+	           + t.getEmpleadosInscritos());
+	   } catch (Exception e) {
+	       System.out.println("T10 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T11 - Empleado con turno ese día NO puede inscribirse ----
+	   try {
+	       cafe.registrarMesero("admin", "meseroSabado", "1234");
+	       Empleado meseroSab = (Empleado) cafe.getUsuarios().get("meseroSabado");
+	       Turno turnoSab = new Turno("TSAB",
+	           LocalDateTime.of(2026, 5, 2, 8, 0),
+	           LocalDateTime.of(2026, 5, 2, 16, 0),
+	           "SABADO", meseroSab);
+	       cafe.agregarTurno("admin", "meseroSabado", turnoSab);
+	       cafe.inscribirUsuarioTorneo("meseroSabado", "TA1", 1);
+	       System.out.println("T11 ERROR - Debió bloquear, empleado tiene turno sábado");
+	   } catch (Exception e) {
+	       System.out.println("T11 OK - Bloqueo empleado con turno: " + e.getMessage());
+	   }
+
+	   // ---- T12 - Admin no puede inscribirse ----
+	   try {
+	       cafe.inscribirUsuarioTorneo("admin", "TA1", 1);
+	       System.out.println("T12 ERROR - Debió bloquear admin");
+	   } catch (Exception e) {
+	       System.out.println("T12 OK - Bloqueo admin: " + e.getMessage());
+	   }
+
+	// ---- T13 - Premio competitivo no cuenta empleados ----
+	   try {
+	       cafe.inscribirUsuarioTorneo("torneoCli1", "TC1", 2);
+	       cafe.inscribirUsuarioTorneo("torneoCli3", "TC1", 1);
+	       cafe.inscribirUsuarioTorneo("mesero2", "TC1", 1);
+	       
+	       TorneoCompetitivo tc = null;
+	       for (Torneo t : cafe.getTorneos()) {
+	           if (t.getId().equals("TC1")) {
+	               tc = (TorneoCompetitivo) t;
+	               break;
+	           }
+	       }
+	       
+	       double premio = tc.getPremio();
+	       System.out.println("T13 OK - Premio competitivo: " + premio + " (esperado: 60000)");
+	   } catch (Exception e) {
+	       System.out.println("T13 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T14 - Otorgar premio amistoso al ganador ----
+	   try {
+	       cafe.otorgarPremioTorneoAmistoso("admin", "TA1", "torneoCli2");
+	       Cliente ganador = (Cliente) cafe.getUsuarios().get("torneoCli2");
+	       System.out.println("T14 OK - Premio otorgado | descuento: " 
+	           + ganador.getPorcentajeDescuentoTorneo());
+	   } catch (Exception e) {
+	       System.out.println("T14 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T15 - Otorgar premio a cliente con descuento activo ----
+	   try {
+	       cafe.otorgarPremioTorneoAmistoso("admin", "TA1", "torneoCli2");
+	       System.out.println("T15 ERROR - Debió bloquear, ya tenía descuento");
+	   } catch (Exception e) {
+	       System.out.println("T15 OK - Bloqueo descuento acumulable: " + e.getMessage());
+	   }
+
+	   // ---- T16 - Otorgar premio a no inscrito ----
+	   try {
+	       cafe.otorgarPremioTorneoAmistoso("admin", "TA1", "torneoCli3");
+	       System.out.println("T16 ERROR - Debió bloquear, no estaba inscrito");
+	   } catch (Exception e) {
+	       System.out.println("T16 OK - Bloqueo no inscrito: " + e.getMessage());
+	   }
+
+	   // ---- T17 - Otorgar premio en torneo competitivo ----
+	   try {
+	       cafe.otorgarPremioTorneoAmistoso("admin", "TC2", "torneoCli1");
+	       System.out.println("T17 ERROR - Debió bloquear, no es amistoso");
+	   } catch (Exception e) {
+	       System.out.println("T17 OK - Bloqueo torneo competitivo: " + e.getMessage());
+	   }
+
+	   // ---- T18 - Comprar con descuento de torneo (consume el descuento) ----
+	   try {
+	       String idJuegoVentaTorneo = null;
+	       for (Map.Entry<String, JuegoMesaVenta> entry : cafe.getJuegosVenta().entrySet()) {
+	           if (entry.getValue().getCantidadStock() > 0) {
+	               idJuegoVentaTorneo = entry.getKey(); break;
+	           }
+	       }
+	       Cliente ganador = (Cliente) cafe.getUsuarios().get("torneoCli2");
+	       double descAntes = ganador.getPorcentajeDescuentoTorneo();
+	       VentaJuego v = cafe.comprarJuegoConDescuentoTorneo("torneoCli2", idJuegoVentaTorneo, 1);
+	       double descDespues = ganador.getPorcentajeDescuentoTorneo();
+	       System.out.println("T18 OK - Compra con descuento torneo | total: " + v.getTotal() 
+	           + " | desc antes: " + descAntes + " | después: " + descDespues);
+	   } catch (Exception e) {
+	       System.out.println("T18 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T19 - Comprar con descuento torneo cuando no hay descuento ----
+	   try {
+	       String idJuegoVentaTorneo = null;
+	       for (Map.Entry<String, JuegoMesaVenta> entry : cafe.getJuegosVenta().entrySet()) {
+	           if (entry.getValue().getCantidadStock() > 0) {
+	               idJuegoVentaTorneo = entry.getKey(); break;
+	           }
+	       }
+	       cafe.comprarJuegoConDescuentoTorneo("torneoCli2", idJuegoVentaTorneo, 1);
+	       System.out.println("T19 ERROR - Debió bloquear, descuento ya consumido");
+	   } catch (Exception e) {
+	       System.out.println("T19 OK - Bloqueo descuento ya consumido: " + e.getMessage());
+	   }
+
+	   // ---- T20 - Eliminar torneo ----
+	   try {
+	       int antes = cafe.getTorneos().size();
+	       cafe.eliminarTorneo("admin", "TA1");
+	       int despues = cafe.getTorneos().size();
+	       System.out.println("T20 OK - Torneo eliminado | antes: " + antes + " | después: " + despues);
+	   } catch (Exception e) {
+	       System.out.println("T20 ERROR: " + e.getMessage());
+	   }
+
+	   // ---- T21 - Eliminar torneo inexistente ----
+	   try {
+	       cafe.eliminarTorneo("admin", "TA999");
+	       System.out.println("T21 ERROR - Debió bloquear torneo inexistente");
+	   } catch (Exception e) {
+	       System.out.println("T21 OK - Bloqueo torneo inexistente: " + e.getMessage());
+	   }
+	   
         // ---- RF Admin 7  Informe 
         try {
             System.out.println("\nRF Admin 7 - Informe diario:");

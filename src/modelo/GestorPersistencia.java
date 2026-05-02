@@ -226,6 +226,10 @@ public class GestorPersistencia {
                     int puntos = Integer.parseInt(p[2].split("\t")[1]);
                     Cliente c = new Cliente(login, contrasena);
                     c.agregarPuntos(puntos);
+                    if (p.length > 3) {
+                        double descTorneo = Double.parseDouble(p[3].split("\t")[1]);
+                        if (descTorneo > 0) c.otorgarDescuentoTorneo(descTorneo);
+                    }
                     cafe.getUsuarios().put(login, c);
 
                 } else if (seccionActual.equals("[meseros]")) {

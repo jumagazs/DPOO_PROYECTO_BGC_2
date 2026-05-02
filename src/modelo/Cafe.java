@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 import juegos.JuegoMesaVenta;
+
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
 
@@ -73,6 +75,9 @@ public class Cafe {
     public Cliente registrarCliente(String login, String contrasena) throws Exception {
         if (usuarios.containsKey(login)) {
             throw new Exception("Ya existe un usuario registrado con ese login.");
+        }
+        if (login.contains(":") || login.contains(",") || login.contains("|") || login.contains("\t")) {
+            throw new Exception("El login contiene caracteres reservados.");
         }
 
         Cliente nuevoCliente = new Cliente(login, contrasena);
@@ -876,6 +881,97 @@ public class Cafe {
 
 	    return venta;
 	}
+	
+	private int calcularCuposMaximos(JuegoMesaPrestamo juego) {
+	    int copias = 0;
+	    String nombre = juego.getNombre();
+	    for (JuegoMesaPrestamo j : juegosPrestamo.values()) {
+	        if (j.getNombre().equals(nombre) 
+	            && !j.getEstado().equalsIgnoreCase("Desaparecido")) {
+	            copias++;
+	        }
+	    }
+	    return copias * juego.getMaxJugadores();
+	}
+	
+	public TorneoAmistoso crearTorneoAmistoso(String idAdmin, String idJuego, int numParticipantes,DayOfWeek dia, double premioDescuento) throws Exception {
+		Administrador admin = validarAdmin(idAdmin);
+		JuegoMesaPrestamo juego = validarJuegoPrestamo(idJuego);
+		
+		int cuposMaximos = calcularCuposMaximos(juego);
+		if (numParticipantes > cuposMaximos) {
+			throw new Exception("No hay suficientes copias del juego. Máximo permitido: " 
+			+ cuposMaximos + ", solicitado: " + numParticipantes + ".");
+		}
+		
+		String id = "TA" + consecutivoTorneos++;
+		TorneoAmistoso torneo = (TorneoAmistoso) admin.crearTorneoAmistoso(id, numParticipantes, juego, dia, premioDescuento);
+		torneos.add(torneo);
+		return torneo;
+		}
+		
+		public TorneoCompetitivo crearTorneoCompetitivo(String idAdmin, String idJuego, int numParticipantes, DayOfWeek dia, double tarifa) throws Exception {
+		Administrador admin = validarAdmin(idAdmin);
+		JuegoMesaPrestamo juego = validarJuegoPrestamo(idJuego);
+		
+		if (tarifa <= 0) {
+			throw new Exception("La tarifa debe ser mayor que cero.");
+		}
+		
+		int cuposMaximos = calcularCuposMaximos(juego);
+		if (numParticipantes > cuposMaximos) {
+			throw new Exception("No hay suficientes copias del juego. Máximo permitido: " + cuposMaximos + ".");
+		}
+		
+		String id = "TC" + consecutivoTorneos++;
+		TorneoCompetitivo torneo = (TorneoCompetitivo) admin.crearTorneoCompetitivo(id, numParticipantes, juego, dia, tarifa);
+		torneos.add(torneo);
+		return torneo;
+		}
+		
+		public void eliminarTorneo(String idAdmin, String idTorneo) throws Exception {
+		    validarAdmin(idAdmin);
+		    Torneo torneo = validarTorneo(idTorneo);
+		    torneos.remove(torneo);
+		}
+		
+		public void inscribirUsuarioTorneo(String login, String idTorneo, int cupos) throws Exception {
+		    Usuario usuario = validarUsuario(login);
+		    Torneo torneo = validarTorneo(idTorneo);
+
+		    if (usuario instanceof Empleado) {
+		        if (((Empleado) usuario).tieneTurnoElDia(torneo.getDia())) {
+		            throw new Exception("El empleado tiene un turno asignado el día del torneo.");
+		        }
+		    } else if (usuario instanceof Administrador) {
+		        throw new Exception("El administrador no puede inscribirse en torneos.");
+		    }
+
+		    torneo.inscribirUsuario(usuario, cupos);
+		}
+		
+		public void desinscribirUsuarioTorneo(String login, String idTorneo) throws Exception {
+		    Usuario usuario = validarUsuario(login);
+		    Torneo torneo = validarTorneo(idTorneo);
+		    torneo.eliminarUsuario(usuario);
+		}
+		
+		public void otorgarPremioTorneoAmistoso(String idAdmin, String idTorneo, String idGanador) throws Exception {
+		    Administrador admin = validarAdmin(idAdmin);
+		    Torneo torneo = validarTorneo(idTorneo);
+
+		    if (!(torneo instanceof TorneoAmistoso)) {
+		        throw new Exception("El torneo no es amistoso, no aplica premio de descuento.");
+		    }
+
+		    Cliente ganador = validarCliente(idGanador);
+
+		    if (!torneo.getInscritosRegulares().containsKey(idGanador) && !torneo.getInscritosFanaticos().containsKey(idGanador)) {
+		        throw new Exception("El ganador no estaba inscrito en este torneo.");
+		    }
+
+		    admin.otorgarPremioAmistoso((TorneoAmistoso) torneo, ganador);
+		}
     
 }
 

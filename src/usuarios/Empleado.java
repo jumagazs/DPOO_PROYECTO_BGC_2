@@ -2,6 +2,7 @@ package usuarios;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import sugerencias.*;
 
@@ -116,6 +117,15 @@ public abstract class Empleado extends Usuario {
     
 	public double calcularDescuento() {
 	    return this.DESCUENTO_EMPLEADO;
+	}
+	
+	public boolean tieneTurnoElDia(DayOfWeek dia) {
+	    for (Turno t : this.turnos) {
+	        if (t.getHoraInicio().getDayOfWeek().equals(dia)) {
+	        		return true;
+	        }
+	    }
+	    return false;
 	}
 	
 	
