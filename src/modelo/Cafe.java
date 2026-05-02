@@ -41,6 +41,8 @@ public class Cafe {
     private int consecutivoTurnos;
     private int capacidadMaximaCafe;
     private List<Torneo> torneos;
+    private int consecutivoTorneos;
+
     
 
     public Cafe() {
@@ -64,6 +66,8 @@ public class Cafe {
         this.consecutivoJuegosVentas = 1;
         this.consecutivoProductos = 1;
         this.capacidadMaximaCafe = 40;
+        this.torneos = new ArrayList<>();
+        this.consecutivoTorneos = 1;
     }
 
     public Cliente registrarCliente(String login, String contrasena) throws Exception {
@@ -832,6 +836,13 @@ public class Cafe {
 	        if (p.getIdPedido().equals(idPedido)) return p;
 	    }
 	    throw new Exception("El pedido no existe.");
+	}
+	
+	private Torneo validarTorneo(String idTorneo) throws Exception {
+	    for (Torneo t : torneos) {
+	        if (t.getId().equals(idTorneo)) return t;
+	    }
+	    throw new Exception("El torneo no existe.");
 	}
 	
 	//PARA PAGAR CON CODIGO DE TORNEO

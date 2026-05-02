@@ -132,4 +132,9 @@ public abstract class Torneo {
 		return inscritosFanaticos;
 	}
 
+	public String getId() {
+		return id;
+	}
+	
+
 }

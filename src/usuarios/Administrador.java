@@ -208,6 +208,15 @@ public class Administrador extends Usuario {
 		return new TorneoAmistoso(id,  cupos,  juego, dia,descuento);
 	}
 	
+	public Torneo crearTorneoCompetitivo(String id, int cupos, JuegoMesaPrestamo juego, 
+            DayOfWeek dia, double tarifa) {
+	return new TorneoCompetitivo(id, cupos, juego, dia, tarifa);
+	}
+	
+	public void otorgarPremioAmistoso(TorneoAmistoso torneo, Cliente ganador) throws Exception {
+	torneo.otorgarPremio(ganador);
+	}
+	
 	@Override
 	public String toString() {
 	    return "login\t" + this.login + "|contrasena\t" + this.contrasena;
