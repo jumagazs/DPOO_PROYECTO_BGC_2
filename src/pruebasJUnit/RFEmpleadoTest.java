@@ -1,13 +1,10 @@
 package pruebasJUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import juegos.JuegoMesaPrestamo;
 import mesas.Mesa;
 import modelo.Cafe;
