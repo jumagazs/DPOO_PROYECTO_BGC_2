@@ -1,6 +1,7 @@
 package interfaz;
 
 import modelo.Cafe;
+import modelo.GestorPersistencia;
 import usuarios.*;
 
 import javax.swing.*;
@@ -9,13 +10,11 @@ public class MainMesero {
 
     public static void main(String[] args) {
 
-        Cafe cafe = new Cafe();
-
         try {
-            Administrador admin = new Administrador("admin", "123");
-            cafe.getUsuarios().put("admin", admin);
+            Cafe cafe = new Cafe();
+            GestorPersistencia gp = new GestorPersistencia("datos/datos.txt");
 
-            cafe.registrarMesero("admin", "mesero1", "123");
+            gp.cargarTodo(cafe);
 
             String user = JOptionPane.showInputDialog("Login Mesero:");
             String pass = JOptionPane.showInputDialog("Contraseña:");
@@ -23,9 +22,9 @@ public class MainMesero {
             Usuario u = cafe.iniciarSesion(user, pass);
 
             if (u instanceof Mesero) {
-                new MeseroFrame(cafe, user);
+                new MeseroFrame(cafe, user, gp);
             } else {
-                JOptionPane.showMessageDialog(null, "No es un mesero");
+                JOptionPane.showMessageDialog(null, "No es mesero");
             }
 
         } catch (Exception e) {

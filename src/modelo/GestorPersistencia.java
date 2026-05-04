@@ -89,6 +89,7 @@ public class GestorPersistencia {
     public void guardarTodo(Cafe cafe) throws Exception {
         PrintWriter pw = new PrintWriter(new FileWriter(this.rutaArchivo));
 
+
         pw.println("[administradores]");
         for (Usuario u : cafe.getUsuarios().values()) {
             if (u instanceof Administrador) {
@@ -125,6 +126,11 @@ public class GestorPersistencia {
         pw.println("[juegosVenta]");
         for (JuegoMesaVenta j : cafe.getJuegosVenta().values()) {
             pw.println(j.toString());
+        }
+        
+        pw.println("[menu]");
+        for (ProductoMenu p : cafe.getMenu().values()) {
+            pw.println(p.toString());
         }
 
         pw.println("[mesas]");
@@ -290,8 +296,53 @@ public class GestorPersistencia {
                     int stock = Integer.parseInt(p[11].split("\t")[1]);
                     double costo = Double.parseDouble(p[12].split("\t")[1]);
                     cafe.getJuegosVenta().put(id, new JuegoMesaVenta(nombre, anio, editor, categoria, min, max, dificil, menores5, menores18, id, precio, stock, costo));
+              
+                
+                    
 
-                } else if (seccionActual.equals("[mesas]")) {
+                } 
+                else if (seccionActual.equals("[menu]")) {
+
+                    String id = p[0].split("\t")[1];
+                    String nombre = p[1].split("\t")[1];
+                    double precio = Double.parseDouble(p[2].split("\t")[1]);
+                    boolean disponible = Boolean.parseBoolean(p[3].split("\t")[1]);
+
+                    if (id.startsWith("B")) {
+
+                        boolean alcoholica = false;
+                        boolean caliente = false;
+
+                        if (p.length > 4)
+                            alcoholica = Boolean.parseBoolean(p[4].split("\t")[1]);
+
+                        if (p.length > 5)
+                            caliente = Boolean.parseBoolean(p[5].split("\t")[1]);
+
+                        cafe.agregarProductoMenu(
+                            new Bebida(id, nombre, precio, disponible, alcoholica, caliente)
+                        );
+
+                    } else {
+
+                        List<String> alerg = new ArrayList<>();
+
+                        if (p.length > 4) {
+                            String[] datos = p[4].split("\t");
+                            if (datos.length > 1 && !datos[1].isEmpty()) {
+                                for (String a : datos[1].split(",")) {
+                                    alerg.add(a);
+                                }
+                            }
+                        }
+
+                        cafe.agregarProductoMenu(
+                            new Pasteleria(id, nombre, precio, disponible, alerg)
+                        );
+                    }
+                }
+                
+                else if (seccionActual.equals("[mesas]")) {
                     String id = p[0].split("\t")[1];
                     int capacidad = Integer.parseInt(p[1].split("\t")[1]);
                     Mesa m = new Mesa(id, capacidad);

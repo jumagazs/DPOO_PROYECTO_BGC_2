@@ -17,4 +17,11 @@ public class Bebida extends ProductoMenu {
     public boolean isCaliente() {
         return caliente;
     }
+    
+    @Override
+    public String toString() {
+        return super.toString()
+            + "|alcoholica\t" + this.alcoholica
+            + "|caliente\t" + this.caliente;
+    }
 }

@@ -1,104 +1,84 @@
 package interfaz;
 
 import javax.swing.*;
-import java.awt.*;
-
 import modelo.Cafe;
-import usuarios.*;
+import modelo.GestorPersistencia;
 
 public class LoginFrame extends JFrame {
 
-    private static final long serialVersionUID = 1L;
-
-    private JTextField txtUser;
-    private JPasswordField txtPass;
-
     private Cafe cafe;
+    private GestorPersistencia gp;
 
-    public LoginFrame(Cafe cafe) {
+    public LoginFrame(Cafe cafe, GestorPersistencia gp) {
         this.cafe = cafe;
+        this.gp = gp;
 
-        setTitle("Login Café");
-        setSize(350,200);
+        setTitle("Login");
+        setSize(300,250);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4,2));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        panel.add(new JLabel("Usuario:"));
-        txtUser = new JTextField();
-        panel.add(txtUser);
+        JTextField txtLogin = new JTextField();
+        JPasswordField txtPass = new JPasswordField();
 
-        panel.add(new JLabel("Contraseña:"));
-        txtPass = new JPasswordField();
-        panel.add(txtPass);
-
-        JButton btnLogin = new JButton("Ingresar");
+        JButton btnLogin = new JButton("Login");
         JButton btnRegistro = new JButton("Registrarse");
 
+        panel.add(new JLabel("Login:"));
+        panel.add(txtLogin);
+        panel.add(new JLabel("Contraseña:"));
+        panel.add(txtPass);
         panel.add(btnLogin);
         panel.add(btnRegistro);
 
         add(panel);
         setVisible(true);
 
-        btnLogin.addActionListener(e -> login());
-        btnRegistro.addActionListener(e -> registrarCliente());
-    }
-
-    private void login() {
-        String user = txtUser.getText();
-        String pass = new String(txtPass.getPassword());
-
-        try {
-            Usuario u = cafe.iniciarSesion(user, pass);
-
-            if (u instanceof Administrador) {
-                new AdminFrame(cafe, user);
-            } else if (u instanceof Mesero) {
-                new MeseroFrame(cafe, user);
-            } else if (u instanceof Cocinero) {
-                new CocineroFrame(cafe, user);
-            } else if (u instanceof Cliente) {
-                new ClienteFrame(cafe, user);
-            }
-
-            dispose();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
-        }
-    }
-
-    private void registrarCliente() {
-
-        JTextField user = new JTextField();
-        JPasswordField pass = new JPasswordField();
-
-        Object[] campos = {
-                "Nuevo usuario:", user,
-                "Contraseña:", pass
-        };
-
-        int res = JOptionPane.showConfirmDialog(
-                this,
-                campos,
-                "Registro Cliente",
-                JOptionPane.OK_CANCEL_OPTION
-        );
-
-        if (res == JOptionPane.OK_OPTION) {
+        // LOGIN
+        btnLogin.addActionListener(e -> {
             try {
-                cafe.registrarCliente(
-                        user.getText(),
-                        new String(pass.getPassword())
-                );
+                String login = txtLogin.getText();
+                String pass = new String(txtPass.getPassword());
 
-                JOptionPane.showMessageDialog(this, "Cliente registrado correctamente");
+                if (!cafe.getUsuarios().containsKey(login)) {
+                    throw new Exception("Usuario no existe");
+                }
 
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, e.getMessage());
+                if (!cafe.getUsuarios().get(login).getContrasena().equals(pass)) {
+                    throw new Exception("Contraseña incorrecta");
+                }
+
+                new ClienteFrame(cafe, login, gp);
+                dispose();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
             }
-        }
+        });
+
+        // REGISTRO (ESTO ES LO QUE TE FALLABA)
+        btnRegistro.addActionListener(e -> {
+            try {
+                String login = txtLogin.getText();
+                String pass = new String(txtPass.getPassword());
+
+                if (login.isEmpty() || pass.isEmpty()) {
+                    throw new Exception("Campos vacíos");
+                }
+
+                cafe.registrarCliente(login, pass);
+
+                // 🔥 IMPORTANTE: GUARDAR
+                gp.guardarTodo(cafe);
+
+                JOptionPane.showMessageDialog(this, "Usuario registrado correctamente");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+            }
+        });
     }
 }

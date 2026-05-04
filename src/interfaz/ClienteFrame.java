@@ -2,106 +2,94 @@ package interfaz;
 
 import javax.swing.*;
 import java.awt.*;
+
 import modelo.Cafe;
-import usuarios.Cliente;
-import pedidos.Pedido;
+import modelo.GestorPersistencia;
 
 public class ClienteFrame extends JFrame {
 
     private Cafe cafe;
     private String login;
+    private GestorPersistencia gp;
 
-    public ClienteFrame(Cafe cafe, String login) {
+    public ClienteFrame(Cafe cafe, String login, GestorPersistencia gp) {
         this.cafe = cafe;
         this.login = login;
+        this.gp = gp;
 
         setTitle("Cliente - " + login);
         setSize(500,400);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(5,1));
+        JPanel panel = new JPanel(new GridLayout(6,1));
 
-        JButton btnVerMenu = new JButton("Ver Menú");
-        JButton btnComprarJuego = new JButton("Comprar Juego");
-        JButton btnInscribirseTorneo = new JButton("Inscribirse a Torneo");
-        JButton btnVerPuntos = new JButton("Ver Puntos");
-        JButton btnFavoritos = new JButton("Favoritos");
+        JButton btnMenu = new JButton("Ver Menu");
+        JButton btnMesa = new JButton("Asignar Mesa");
+        JButton btnPrestamo = new JButton("Pedir Juego");
+        JButton btnCompra = new JButton("Comprar Juego");
 
-        panel.add(btnVerMenu);
-        panel.add(btnComprarJuego);
-        panel.add(btnInscribirseTorneo);
-        panel.add(btnVerPuntos);
-        panel.add(btnFavoritos);
+        panel.add(btnMenu);
+        panel.add(btnMesa);
+        panel.add(btnPrestamo);
+        panel.add(btnCompra);
 
         add(panel);
         setVisible(true);
 
-        btnVerMenu.addActionListener(e -> {
-            StringBuilder menu = new StringBuilder();
-
-            cafe.consultarMenu().forEach(p -> {
-                menu.append(p.getNombre()).append(" - $").append(p.getPrecio()).append("\n");
-            });
-
-            JOptionPane.showMessageDialog(this, menu.toString());
+        btnMenu.addActionListener(e -> {
+            StringBuilder sb = new StringBuilder();
+            cafe.consultarMenu().forEach(p -> sb.append(p).append("\n"));
+            JOptionPane.showMessageDialog(this, sb.toString());
         });
 
-        btnComprarJuego.addActionListener(e -> comprarJuego());
-
-        btnVerPuntos.addActionListener(e -> {
+        btnMesa.addActionListener(e -> {
             try {
-                Cliente c = (Cliente) cafe.getUsuarios().get(login);
-                JOptionPane.showMessageDialog(this, "Puntos: " + c.getPuntosFidelidad());
+                int personas = Integer.parseInt(JOptionPane.showInputDialog("Personas:"));
+
+                cafe.asignarMesaACliente(
+                        (usuarios.Cliente) cafe.getUsuarios().get(login),
+                        personas, false, false);
+
+                gp.guardarTodo(cafe);
+
+                JOptionPane.showMessageDialog(this, "Mesa asignada");
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
 
-        btnFavoritos.addActionListener(e -> {
+        btnPrestamo.addActionListener(e -> {
             try {
-                StringBuilder favs = new StringBuilder();
-                cafe.consultarFavoritos(login).forEach(j -> {
-                    favs.append(j.getNombre()).append("\n");
-                });
-                JOptionPane.showMessageDialog(this, favs.toString());
+                String idJuego = JOptionPane.showInputDialog("ID Juego:");
+                cafe.solicitarPrestamoJuegoFlexible(login, idJuego, true);
+
+                gp.guardarTodo(cafe);
+                JOptionPane.showMessageDialog(this, "Prestamo realizado");
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
 
-        btnInscribirseTorneo.addActionListener(e -> {
-            String id = JOptionPane.showInputDialog("ID Torneo:");
+        btnCompra.addActionListener(e -> {
             try {
-                cafe.inscribirUsuarioTorneo(login, id, 1);
-                JOptionPane.showMessageDialog(this, "Inscrito correctamente");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
-            }
-        });
-    }
+                String idJuego = JOptionPane.showInputDialog("ID Juego:");
+                int cant = Integer.parseInt(JOptionPane.showInputDialog("Cantidad:"));
 
-    private void comprarJuego() {
-        JTextField idJuego = new JTextField();
-        JTextField cantidad = new JTextField();
-
-        Object[] campos = {
-                "ID Juego:", idJuego,
-                "Cantidad:", cantidad
-        };
-
-        int res = JOptionPane.showConfirmDialog(this, campos, "Compra", JOptionPane.OK_CANCEL_OPTION);
-
-        if (res == JOptionPane.OK_OPTION) {
-            try {
                 cafe.comprarJuegoMesa(
-                        (Cliente) cafe.getUsuarios().get(login),
-                        idJuego.getText(),
-                        Integer.parseInt(cantidad.getText())
+                        (usuarios.Cliente) cafe.getUsuarios().get(login),
+                        idJuego,
+                        cant
                 );
-                JOptionPane.showMessageDialog(this,"Compra realizada");
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,e.getMessage());
+
+                gp.guardarTodo(cafe);
+
+                JOptionPane.showMessageDialog(this, "Compra realizada");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
             }
-        }
+        });
     }
 }

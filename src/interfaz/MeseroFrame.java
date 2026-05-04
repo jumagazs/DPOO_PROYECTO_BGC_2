@@ -2,65 +2,77 @@ package interfaz;
 
 import javax.swing.*;
 import java.awt.*;
+
 import modelo.Cafe;
-import pedidos.Pedido;
+import modelo.GestorPersistencia;
 
 public class MeseroFrame extends JFrame {
 
     private Cafe cafe;
     private String login;
+    private GestorPersistencia gp;
 
-    public MeseroFrame(Cafe cafe, String login) {
+    public MeseroFrame(Cafe cafe, String login, GestorPersistencia gp) {
         this.cafe = cafe;
         this.login = login;
+        this.gp = gp;
 
         setTitle("Mesero - " + login);
         setSize(500,400);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(4,1));
+        JPanel panel = new JPanel(new GridLayout(6,1));
 
-        JButton btnAsignarMesa = new JButton("Asignar Mesa");
-        JButton btnRegistrarPedido = new JButton("Registrar Pedido");
-        JButton btnPrestarJuego = new JButton("Prestar Juego");
         JButton btnVerTurnos = new JButton("Ver Turnos");
+        JButton btnPedido = new JButton("Registrar Pedido");
+        JButton btnPrestamo = new JButton("Prestar Juego");
 
-        panel.add(btnAsignarMesa);
-        panel.add(btnRegistrarPedido);
-        panel.add(btnPrestarJuego);
         panel.add(btnVerTurnos);
+        panel.add(btnPedido);
+        panel.add(btnPrestamo);
 
         add(panel);
         setVisible(true);
 
-        btnRegistrarPedido.addActionListener(e -> {
-            String idMesa = JOptionPane.showInputDialog("ID Mesa:");
-
-            try {
-                Pedido p = cafe.registrarPedidoMesero(login, idMesa);
-                JOptionPane.showMessageDialog(this,"Pedido creado: " + p.getIdPedido());
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
-            }
-        });
-
-        btnPrestarJuego.addActionListener(e -> {
-            String idJuego = JOptionPane.showInputDialog("ID Juego:");
-            String idMesa = JOptionPane.showInputDialog("ID Mesa:");
-            String idCliente = JOptionPane.showInputDialog("Login Cliente:");
-
-            try {
-                cafe.prestamoDeJuegos(idJuego, login, idMesa, idCliente);
-                JOptionPane.showMessageDialog(this,"Juego prestado");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
-            }
-        });
-
         btnVerTurnos.addActionListener(e -> {
             try {
-                JOptionPane.showMessageDialog(this,
-                        cafe.consultarTurnoEmpleado(login).toString());
+                StringBuilder sb = new StringBuilder();
+                cafe.consultarTurnoEmpleado(login)
+                    .forEach(t -> sb.append(t).append("\n"));
+
+                JOptionPane.showMessageDialog(this, sb.toString());
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+            }
+        });
+
+        btnPedido.addActionListener(e -> {
+            try {
+                String mesa = JOptionPane.showInputDialog("ID Mesa:");
+                cafe.registrarPedidoMesero(login, mesa);
+
+                gp.guardarTodo(cafe);
+
+                JOptionPane.showMessageDialog(this, "Pedido creado");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+            }
+        });
+
+        btnPrestamo.addActionListener(e -> {
+            try {
+                String idJuego = JOptionPane.showInputDialog("ID Juego:");
+                String idMesa = JOptionPane.showInputDialog("ID Mesa:");
+                String idCliente = JOptionPane.showInputDialog("Cliente:");
+
+                cafe.prestamoDeJuegos(idJuego, login, idMesa, idCliente);
+
+                gp.guardarTodo(cafe);
+
+                JOptionPane.showMessageDialog(this, "Préstamo hecho");
+
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }

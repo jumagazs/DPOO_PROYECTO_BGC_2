@@ -1,6 +1,7 @@
 package interfaz;
 
 import modelo.Cafe;
+import modelo.GestorPersistencia;
 import usuarios.*;
 
 import javax.swing.*;
@@ -9,11 +10,11 @@ public class MainAdmin {
 
     public static void main(String[] args) {
 
-        Cafe cafe = new Cafe();
-
         try {
-            Administrador admin = new Administrador("admin", "123");
-            cafe.getUsuarios().put("admin", admin);
+            Cafe cafe = new Cafe();
+            GestorPersistencia gp = new GestorPersistencia("datos/datos.txt");
+
+            gp.cargarTodo(cafe);
 
             String user = JOptionPane.showInputDialog("Login Admin:");
             String pass = JOptionPane.showInputDialog("Contraseña:");
@@ -21,7 +22,7 @@ public class MainAdmin {
             Usuario u = cafe.iniciarSesion(user, pass);
 
             if (u instanceof Administrador) {
-                new AdminFrame(cafe, user);
+                new AdminFrame(cafe, user, gp);
             } else {
                 JOptionPane.showMessageDialog(null, "No es administrador");
             }
