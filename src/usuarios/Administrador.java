@@ -128,20 +128,38 @@ public class Administrador extends Usuario {
 	    LocalDateTime ahora = LocalDateTime.now();
 	    Informe inf = new Informe();
 	    inf.granularidad = granularidad;
+	    
+	    java.time.format.DateTimeFormatter formatterFecha = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	    
 	    for (VentaJuego v : ventas) {
-	        if (dentroDeGranularidad(LocalDateTime.parse(v.getFecha()), ahora, granularidad)) {
+	    		LocalDateTime fecha = parsearFecha(v.getFecha());
+	        if (fecha != null && dentroDeGranularidad(fecha, ahora, granularidad)) {
 	            inf.totalJuegos += v.getTotal();
 	            inf.impuestosJuegos += v.getImpuesto();
 	        }
 	    }
 	    for (Pedido p : pedidos) {
-	        if (dentroDeGranularidad(LocalDateTime.parse(p.getFecha()), ahora, granularidad)) {
+	    		LocalDateTime fecha = parsearFecha(p.getFecha());
+	        if (fecha != null && dentroDeGranularidad(fecha, ahora, granularidad)) {
 	            inf.totalComida += p.getTotal();
 	            inf.impuestosComida += p.getImpuestoConsumo();
 	            inf.propinasComida += p.getPropina();
 	        }
 	    }
 	    return inf;
+	}
+	
+	private LocalDateTime parsearFecha(String fecha) {
+	    try {
+	        return LocalDateTime.parse(fecha);
+	    } catch (Exception e) {
+	        try {
+	            return java.time.LocalDate.parse(fecha)
+	                .atStartOfDay();
+	        } catch (Exception e2) {
+	            return null;
+	        }
+	    }
 	}
 
 	private boolean dentroDeGranularidad(LocalDateTime fecha, LocalDateTime ahora, String granularidad) {

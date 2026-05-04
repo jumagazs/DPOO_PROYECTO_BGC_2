@@ -174,4 +174,36 @@ public class RFAdminTest {
         assertTrue(informe.totalComida > 0);
         assertTrue(informe.impuestosComida > 0);
     }
+    
+    @Test
+    public void testCrearTorneoConCuposInsuficientes() throws Exception {
+        String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
+        JuegoMesaPrestamo j = cafe.getJuegosPrestamo().get(idJuego);
+        int max = j.getMaxJugadores();
+        
+        Exception e = assertThrows(Exception.class, () -> {
+            cafe.crearTorneoAmistoso("admin", idJuego, max + 100, 
+                java.time.DayOfWeek.MONDAY, 0.1);
+        });
+        assertTrue(e.getMessage().contains("copias"));
+    }
+
+    @Test
+    public void testEmpleadoConTurnoNoPuedeInscribirseATorneo() throws Exception {
+        Empleado emp = (Empleado) cafe.getUsuarios().get("meseroBase");
+        Turno t = new Turno("TX",
+            LocalDateTime.of(2026, 5, 4, 8, 0),
+            LocalDateTime.of(2026, 5, 4, 16, 0),
+            "LUNES", emp);
+        cafe.agregarTurno("admin", "meseroBase", t);
+        
+        String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
+        cafe.crearTorneoAmistoso("admin", idJuego, 4, java.time.DayOfWeek.MONDAY, 0.1);
+        String idTorneo = cafe.getTorneos().get(0).getId();
+        
+        Exception e = assertThrows(Exception.class, () -> {
+            cafe.inscribirUsuarioTorneo("meseroBase", idTorneo, 1);
+        });
+        assertTrue(e.getMessage().toLowerCase().contains("turno"));
+    }
 }

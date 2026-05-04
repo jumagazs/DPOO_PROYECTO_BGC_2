@@ -94,7 +94,7 @@ public class RFEmpleadoTest {
     public void testRF15EmpleadoPideJuegoFueraDeTurno() throws Exception {
         String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
 
-        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("mesero1", idJuego, false);
+        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("mesero1", idJuego);
 
         assertNotNull(prestamo);
         assertEquals("mesero1", prestamo.getUsuario().getLogin());

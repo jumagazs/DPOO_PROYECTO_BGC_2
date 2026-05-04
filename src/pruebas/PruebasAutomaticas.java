@@ -383,7 +383,7 @@ public class PruebasAutomaticas {
                         idJuegoLibre = entry.getKey(); break;
                     }
                 }
-                Prestamo pEmp = cafe.solicitarPrestamoJuegoFlexible("mesero2", idJuegoLibre, false);
+                Prestamo pEmp = cafe.solicitarPrestamoJuegoFlexible("mesero2", idJuegoLibre);
                 System.out.println("RF15 OK - Empleado pidió préstamo fuera de turno: " + pEmp.getIdPrestamo());
             } catch (Exception e) {
                 System.out.println("RF15 ERROR: " + e.getMessage());

@@ -59,7 +59,6 @@ public class LoginFrame extends JFrame {
             }
         });
 
-        // REGISTRO (ESTO ES LO QUE TE FALLABA)
         btnRegistro.addActionListener(e -> {
             try {
                 String login = txtLogin.getText();
@@ -71,7 +70,6 @@ public class LoginFrame extends JFrame {
 
                 cafe.registrarCliente(login, pass);
 
-                // 🔥 IMPORTANTE: GUARDAR
                 gp.guardarTodo(cafe);
 
                 JOptionPane.showMessageDialog(this, "Usuario registrado correctamente");

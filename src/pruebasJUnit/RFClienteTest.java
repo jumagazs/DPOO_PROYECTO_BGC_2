@@ -95,7 +95,7 @@ public class RFClienteTest {
 
         String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
 
-        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego, false);
+        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego);
 
         assertNotNull(prestamo);
         assertEquals("cliente1", prestamo.getUsuario().getLogin());
@@ -108,7 +108,7 @@ public class RFClienteTest {
         cafe.asignarMesaACliente(cliente, 3, false, false);
 
         String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
-        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego, false);
+        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego);
 
         cafe.devolverJuego(prestamo.getIdPrestamo());
 
@@ -121,7 +121,7 @@ public class RFClienteTest {
         cafe.asignarMesaACliente(cliente, 3, false, false);
 
         String idJuego = cafe.getJuegosPrestamo().keySet().iterator().next();
-        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego, false);
+        Prestamo prestamo = cafe.solicitarPrestamoJuegoFlexible("cliente1", idJuego);
 
         cafe.devolverJuego(prestamo.getIdPrestamo());
 

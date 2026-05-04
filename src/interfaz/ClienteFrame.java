@@ -45,15 +45,15 @@ public class ClienteFrame extends JFrame {
         btnMesa.addActionListener(e -> {
             try {
                 int personas = Integer.parseInt(JOptionPane.showInputDialog("Personas:"));
-
+                boolean jovenes = JOptionPane.showConfirmDialog(this, "¿Hay jóvenes (5-18 años)?",
+                        "Mesa", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+                boolean ninos = JOptionPane.showConfirmDialog(this, "¿Hay niños (<5 años)?",
+                        "Mesa", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
                 cafe.asignarMesaACliente(
                         (usuarios.Cliente) cafe.getUsuarios().get(login),
-                        personas, false, false);
-
+                        personas, jovenes, ninos);
                 gp.guardarTodo(cafe);
-
                 JOptionPane.showMessageDialog(this, "Mesa asignada");
-
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
@@ -62,7 +62,7 @@ public class ClienteFrame extends JFrame {
         btnPrestamo.addActionListener(e -> {
             try {
                 String idJuego = JOptionPane.showInputDialog("ID Juego:");
-                cafe.solicitarPrestamoJuegoFlexible(login, idJuego, true);
+                cafe.solicitarPrestamoJuegoFlexible(login, idJuego);
 
                 gp.guardarTodo(cafe);
                 JOptionPane.showMessageDialog(this, "Prestamo realizado");
@@ -76,17 +76,11 @@ public class ClienteFrame extends JFrame {
             try {
                 String idJuego = JOptionPane.showInputDialog("ID Juego:");
                 int cant = Integer.parseInt(JOptionPane.showInputDialog("Cantidad:"));
-
-                cafe.comprarJuegoMesa(
-                        (usuarios.Cliente) cafe.getUsuarios().get(login),
-                        idJuego,
-                        cant
-                );
-
+                int puntos = Integer.parseInt(JOptionPane.showInputDialog("Puntos a usar (0 si ninguno):"));
+                String codigo = JOptionPane.showInputDialog("Código descuento (dejar vacío si ninguno):");
+                cafe.comprarJuegoConDescuento(login, idJuego, cant, puntos, codigo);
                 gp.guardarTodo(cafe);
-
                 JOptionPane.showMessageDialog(this, "Compra realizada");
-
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }

@@ -153,6 +153,29 @@ public class Cafe {
         return mejorMesa;
     }
     
+    public void liberarMesa(String login) throws Exception {
+        Cliente cliente = validarCliente(login);
+        
+        Mesa mesaDelCliente = null;
+        for (Mesa mesa : mesas.values()) {
+            if (mesa.isOcupada() && mesa.getOcupante() != null 
+                    && mesa.getOcupante().getLogin().equals(login)) {
+                mesaDelCliente = mesa;
+                break;
+            }
+        }
+        
+        if (mesaDelCliente == null) {
+            throw new Exception("El cliente no tiene una mesa asignada.");
+        }
+        
+        if (mesaDelCliente.getJuegosPrestadosActivos() > 0) {
+            throw new Exception("Debe devolver todos los juegos antes de liberar la mesa.");
+        }
+        
+        mesaDelCliente.liberarMesa();
+    }
+    
 
     
     public List<Prestamo> getPrestamos() {
@@ -249,36 +272,8 @@ public class Cafe {
         juegosVenta.put(juego.getIdJuegoVenta(), juego);
     }
     
-    public VentaJuego comprarJuegoMesa(Cliente cliente, String idJuegoVenta, int cantidad) throws Exception {
-        if (cliente == null) {
-            throw new Exception("El cliente no existe.");
-        }
-
-        if (!juegosVenta.containsKey(idJuegoVenta)) {
-            throw new Exception("El juego no existe en el inventario de venta.");
-        }
-
-        if (cantidad <= 0) {
-            throw new Exception("La cantidad debe ser mayor que cero.");
-        }
-
-        JuegoMesaVenta juego = juegosVenta.get(idJuegoVenta);
-        juego.reducirStock(cantidad);
-
-        String idVenta = "V" + consecutivoVentas;
-        consecutivoVentas++;
-
-        VentaJuego venta = new VentaJuego(idVenta, "2026-04-17", cliente);
-        DetalleVenta detalle = new DetalleVenta(cantidad, juego);
-
-        venta.agregarDetalle(detalle);
-        venta.calcularValores(0.19,0,0);
-
-        cliente.agregarPuntos(venta.getPuntosGenerados());
-        ventas.add(venta);
-
-        return venta;
-    }
+    
+    
     //requermiento 11 //
     public void agregarJuegoFavoritoAUsuario(String login, String idJuego) throws Exception{
     		Usuario usuario = validarUsuario(login);
@@ -356,11 +351,17 @@ public class Cafe {
 
         //requerimiento 15
 
-    public Prestamo solicitarPrestamoJuegoFlexible(String login, String idJuego, boolean fueExplicado) throws Exception {
+    public Prestamo solicitarPrestamoJuegoFlexible(String login, String idJuego) throws Exception {
 
     	 	Usuario usuario = validarUsuario(login);
     	    JuegoMesaPrestamo juego = validarJuegoPrestamo(idJuego);
     	    
+    	    boolean fueExplicado = false;
+    	    if (juego.isEsDificil()) {
+    	        fueExplicado = hayMeseroCapacitadoParaJuego(idJuego); 
+    	        if (!fueExplicado) {
+    	        }
+    	    }
 
         if (!juego.isDisponible()) {
             throw new Exception("El juego no está disponible.");
@@ -436,6 +437,18 @@ public class Cafe {
 
         return prestamo;
     }
+    
+    private boolean hayMeseroCapacitadoParaJuego(String idJuego) {
+        for (Usuario u : usuarios.values()) {
+            if (u instanceof Mesero) {
+                Mesero m = (Mesero) u;
+                if (m.puedeExplicar(idJuego)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     //requerimiento 17 //
 
@@ -447,6 +460,8 @@ public class Cafe {
         sugerencias.add(sugerencia);
         return sugerencia;
     }
+    
+
 
     	//Requerimiento 18 
     
